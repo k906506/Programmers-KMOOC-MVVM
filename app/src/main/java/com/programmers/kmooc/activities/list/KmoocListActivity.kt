@@ -41,7 +41,12 @@ class KmoocListActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
+        binding.pullToRefresh.setOnRefreshListener {
+            viewModel.list()
+        }
+
         viewModel.list()
+
         binding.lectureList.layoutManager = LinearLayoutManager(this@KmoocListActivity)
         binding.lectureList.adapter = adapter
     }
@@ -64,9 +69,11 @@ class KmoocListActivity : AppCompatActivity() {
 
                 // Todo 중복 요청 해결 필요
 
-                if(viewModel.isLoading.value != true) {
-                    val layoutManager = binding.lectureList.layoutManager ?: error("Not Initialized")
-                    val lastItemManager = (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+                if (viewModel.isLoading.value != true) {
+                    val layoutManager =
+                        binding.lectureList.layoutManager ?: error("Not Initialized")
+                    val lastItemManager =
+                        (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
 
                     if (layoutManager.itemCount <= lastItemManager + 5) {
                         viewModel.next()
