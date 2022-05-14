@@ -4,10 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.programmers.kmooc.models.Lecture
 import com.programmers.kmooc.models.LectureList
 import com.programmers.kmooc.repositories.KmoocRepository
-import java.util.Collections.addAll
 
 class KmoocListViewModel(private val repository: KmoocRepository) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
@@ -25,8 +23,15 @@ class KmoocListViewModel(private val repository: KmoocRepository) : ViewModel() 
     }
 
     fun next() {
-        val currentLectureList = LectureList.EMPTY
+        _isLoading.postValue(true)
+        // 강의 목록이 없으면 그냥 return
+        val currentLectureList = _lectures.value ?: return
         repository.next(currentLectureList) { lectureList ->
+            currentLectureList.lectures.toMutableList().apply {
+                addAll(lectureList.lectures)
+            }
+            _lectures.postValue(currentLectureList)
+            _isLoading.postValue(false)
         }
     }
 }

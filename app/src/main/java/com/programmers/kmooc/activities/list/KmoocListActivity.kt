@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.programmers.kmooc.KmoocApplication
 import com.programmers.kmooc.activities.detail.KmoocDetailActivity
 import com.programmers.kmooc.databinding.ActivityKmookListBinding
@@ -33,18 +35,15 @@ class KmoocListActivity : AppCompatActivity() {
         binding = ActivityKmookListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.lectureList.adapter = adapter
-
-        viewModel.list()
-
+        initViews()
         subscribeObserver()
+        infinityRecyclerView()
     }
 
-    private fun startDetailActivity(lecture: Lecture) {
-        startActivity(
-            Intent(this, KmoocDetailActivity::class.java)
-                .apply { putExtra(KmoocDetailActivity.INTENT_PARAM_COURSE_ID, lecture.id) }
-        )
+    private fun initViews() {
+        viewModel.list()
+        binding.lectureList.layoutManager = LinearLayoutManager(this@KmoocListActivity)
+        binding.lectureList.adapter = adapter
     }
 
     private fun subscribeObserver() {
@@ -56,5 +55,31 @@ class KmoocListActivity : AppCompatActivity() {
             adapter.updateLectures(it.lectures)
             binding.pullToRefresh.isRefreshing = false
         }
+    }
+
+    private fun infinityRecyclerView() {
+        binding.lectureList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                // Todo 중복 요청 해결 필요
+
+                if(viewModel.isLoading.value != true) {
+                    val layoutManager = binding.lectureList.layoutManager ?: error("Not Initialized")
+                    val lastItemManager = (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+
+                    if (layoutManager.itemCount <= lastItemManager + 5) {
+                        viewModel.next()
+                    }
+                }
+            }
+        })
+    }
+
+    private fun startDetailActivity(lecture: Lecture) {
+        startActivity(
+            Intent(this, KmoocDetailActivity::class.java)
+                .apply { putExtra(KmoocDetailActivity.INTENT_PARAM_COURSE_ID, lecture.id) }
+        )
     }
 }
