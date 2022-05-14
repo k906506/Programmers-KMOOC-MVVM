@@ -63,6 +63,10 @@ class KmoocDetailActivity : AppCompatActivity() {
             "운영기간 : ",
             DateUtil.formatDate(lecture.start) + " ~ " + DateUtil.formatDate(lecture.end)
         )
+
+        binding.webView.loadData(lecture.overview ?: "", "text/html", "UTF-8")
+        binding.webView.visibility = (lecture.overview ?: "").isNotEmpty().toVisibility()
+
     }
 
     private fun subscribeObserver() {
