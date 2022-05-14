@@ -82,8 +82,8 @@ class KmoocRepository {
                 orgName = getString("org_name"),
                 start = DateUtil.parseDate(getString("start")),
                 end = DateUtil.parseDate(getString("end")),
-                teachers = getString("teachers"),
-                overview = getString("overview")
+                teachers = if (has("teacher")) getString("teachers") else null,
+                overview = if (has("overview")) getString("overview") else null
             )
         }
     }
