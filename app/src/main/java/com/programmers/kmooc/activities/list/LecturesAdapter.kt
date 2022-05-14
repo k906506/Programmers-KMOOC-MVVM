@@ -6,6 +6,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.programmers.kmooc.R
 import com.programmers.kmooc.databinding.ViewKmookListItemBinding
 import com.programmers.kmooc.models.Lecture
+import com.programmers.kmooc.network.ImageLoader
+import com.programmers.kmooc.utils.DateUtil
+import java.text.SimpleDateFormat
 
 class LecturesAdapter : RecyclerView.Adapter<LectureViewHolder>() {
 
@@ -31,9 +34,23 @@ class LecturesAdapter : RecyclerView.Adapter<LectureViewHolder>() {
 
     override fun onBindViewHolder(holder: LectureViewHolder, position: Int) {
         val lecture = lectures[position]
+        holder.bindViews(lecture)
         holder.itemView.setOnClickListener { onClick(lecture) }
     }
 }
 
-class LectureViewHolder(binding: ViewKmookListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+class LectureViewHolder(private val binding: ViewKmookListItemBinding) :
+    RecyclerView.ViewHolder(binding.root) {
+
+    fun bindViews(lecture: Lecture) = with(binding) {
+        binding.lectureTitle.text = lecture.name
+        binding.lectureFrom.text = lecture.orgName
+
+        binding.lectureDuration.text =
+            DateUtil.formatDate(lecture.start) + " ~ " + DateUtil.formatDate(lecture.end)
+
+        ImageLoader.loadImage(lecture.courseImage) { bitmap ->
+            lectureImage.setImageBitmap(bitmap)
+        }
+    }
 }
