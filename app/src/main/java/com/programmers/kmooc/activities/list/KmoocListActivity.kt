@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.programmers.kmooc.KmoocApplication
 import com.programmers.kmooc.activities.detail.KmoocDetailActivity
 import com.programmers.kmooc.databinding.ActivityKmookListBinding
@@ -19,6 +17,11 @@ class KmoocListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityKmookListBinding
     private lateinit var viewModel: KmoocListViewModel
 
+    private val adapter by lazy {
+        LecturesAdapter()
+            .apply { onClick = this@KmoocListActivity::startDetailActivity }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -30,12 +33,11 @@ class KmoocListActivity : AppCompatActivity() {
         binding = ActivityKmookListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val adapter = LecturesAdapter()
-            .apply { onClick = this@KmoocListActivity::startDetailActivity }
-
         binding.lectureList.adapter = adapter
 
         viewModel.list()
+
+        subscribeObserver()
     }
 
     private fun startDetailActivity(lecture: Lecture) {
@@ -43,5 +45,16 @@ class KmoocListActivity : AppCompatActivity() {
             Intent(this, KmoocDetailActivity::class.java)
                 .apply { putExtra(KmoocDetailActivity.INTENT_PARAM_COURSE_ID, lecture.id) }
         )
+    }
+
+    private fun subscribeObserver() {
+        viewModel.isLoading.observe(this) {
+            binding.progressBar.visibility = it.toVisibility()
+        }
+
+        viewModel.lectures.observe(this) {
+            adapter.updateLectures(it.lectures)
+            binding.pullToRefresh.isRefreshing = false
+        }
     }
 }
